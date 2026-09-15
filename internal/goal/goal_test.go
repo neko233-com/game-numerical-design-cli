@@ -64,7 +64,7 @@ func TestWriteAllAndCheck(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(data), "毁灭") && !strings.Contains(string(data), "path") {
+	if !strings.Contains(string(data), "单手剑") && !strings.Contains(string(data), "weapon") {
 		t.Fatalf("hero csv unexpected: %s", data[:min(200, len(data))])
 	}
 	issues := gen.CheckTables()
@@ -98,8 +98,8 @@ combat:
   archetypes:
     - id: "2001"
       name: 测试战士
-      path: 毁灭
-      element: 物理
+      weapon: 单手剑
+      element: 火
       rarity: 5
       hp: 1000
       atk: 600

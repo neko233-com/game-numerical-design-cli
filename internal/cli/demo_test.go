@@ -45,7 +45,7 @@ func TestDemoGoalPrint(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("code=%d err=%s", code, errS)
 	}
-	if !strings.Contains(out, "星轨数值Demo") && !strings.Contains(out, "progress") {
+	if !strings.Contains(out, "提瓦特数值Demo") && !strings.Contains(out, "progress") {
 		t.Fatalf("out=%s", out)
 	}
 }

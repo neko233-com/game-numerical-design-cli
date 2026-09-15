@@ -92,7 +92,7 @@ Commands:
   balance    锚点校验 / 敏感度分析 / 维度打分 / 胜率对照
   feel       手感模糊描述 ↔ 量化指标
   table      多格式配置表：xlsx/csv/tsv/json/yaml 读写转换与改值
-  demo       目标驱动 demo：init/build/check/sim（崩铁式数值脚手架）
+  demo       目标驱动 demo：init/build/check/sim（原神式数值脚手架）
   script     内嵌 TS/JS 脚本（esbuild+goja，无需装 Node）
   sim        并行战斗模拟器（≤1000 并发，每场日志，可查询历史）
   report     HTML 报告（内联 SVG 图表）：demo / sim / curve

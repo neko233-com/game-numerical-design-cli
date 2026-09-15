@@ -55,20 +55,22 @@ type CombatGoal struct {
 	EnemyDefMult float64 `json:"enemy_def_mult" yaml:"enemy_def_mult"`
 }
 
-// Archetype is a path/role (崩铁命途 simplified).
+// Archetype is a character weapon/role (原神武器类型 simplified).
 type Archetype struct {
-	ID       string  `json:"id" yaml:"id"`
-	Name     string  `json:"name" yaml:"name"`
-	Path     string  `json:"path" yaml:"path"`       // 毁灭/巡猎/智识/同谐/虚无/存护/丰饶
-	Element  string  `json:"element" yaml:"element"` // 物理/火/冰/雷/风/量子/虚数
-	Rarity   int     `json:"rarity" yaml:"rarity"`   // 4 or 5
+	ID   string `json:"id" yaml:"id"`
+	Name string `json:"name" yaml:"name"`
+	// Weapon: 单手剑/双手剑/长柄武器/弓/法器
+	Weapon string `json:"weapon" yaml:"weapon"`
+	// Element: 火/水/雷/冰/风/岩/草
+	Element  string  `json:"element" yaml:"element"`
+	Rarity   int     `json:"rarity" yaml:"rarity"` // 4 or 5
 	HP       float64 `json:"hp" yaml:"hp"`
 	ATK      float64 `json:"atk" yaml:"atk"`
 	DEF      float64 `json:"def" yaml:"def"`
 	SPD      float64 `json:"spd" yaml:"spd"`
 	CritRate float64 `json:"crit_rate" yaml:"crit_rate"` // 0..1
 	CritDMG  float64 `json:"crit_dmg" yaml:"crit_dmg"`   // 0.5 = 50%
-	// Skill multipliers (coefficient on ATK).
+	// Skill multipliers: 普攻 / 元素战技 / 元素爆发
 	BasicMult float64 `json:"basic_mult" yaml:"basic_mult"`
 	SkillMult float64 `json:"skill_mult" yaml:"skill_mult"`
 	UltMult   float64 `json:"ult_mult" yaml:"ult_mult"`
@@ -105,11 +107,11 @@ type EconomyGoal struct {
 	GoldCostMax float64 `json:"gold_cost_max" yaml:"gold_cost_max"`
 }
 
-// DefaultGoal is a sensible 崩铁-like demo starting point (sanitized, fictional).
+// DefaultGoal is a Genshin-like demo starting point (sanitized, fictional names).
 func DefaultGoal() Goal {
 	return Goal{
-		Name:        "星轨数值Demo",
-		Description: "简化崩铁式：命途/属性/等级/技能/任务/抽卡，用于数值验证",
+		Name:        "提瓦特数值Demo",
+		Description: "简化原神式：元素/武器/等级/技能/任务/祈愿，用于数值验证（脱敏虚构）",
 		Version:     1,
 		Progress: ProgressGoal{
 			MaxLevel:    40,
@@ -127,27 +129,27 @@ func DefaultGoal() Goal {
 			EnemyAtkMult:  0.55,
 			EnemyDefMult:  0.9,
 			Archetypes: []Archetype{
-				{ID: "1001", Name: "开拓者·毁灭", Path: "毁灭", Element: "物理", Rarity: 5,
+				{ID: "1001", Name: "炎锋·旅者", Weapon: "单手剑", Element: "火", Rarity: 5,
 					HP: 1200, ATK: 580, DEF: 460, SPD: 100,
 					CritRate: 0.05, CritDMG: 0.50,
 					BasicMult: 1.0, SkillMult: 1.4, UltMult: 2.8},
-				{ID: "1002", Name: "巡星·猎手", Path: "巡猎", Element: "风", Rarity: 5,
+				{ID: "1002", Name: "湍流·猎手", Weapon: "弓", Element: "水", Rarity: 5,
 					HP: 980, ATK: 720, DEF: 360, SPD: 115,
 					CritRate: 0.08, CritDMG: 0.55,
 					BasicMult: 1.1, SkillMult: 1.8, UltMult: 3.2},
-				{ID: "1003", Name: "智识·星火", Path: "智识", Element: "火", Rarity: 5,
+				{ID: "1003", Name: "惊雷·秘法", Weapon: "法器", Element: "雷", Rarity: 5,
 					HP: 1020, ATK: 700, DEF: 380, SPD: 96,
 					CritRate: 0.05, CritDMG: 0.50,
 					BasicMult: 0.9, SkillMult: 1.6, UltMult: 3.5},
-				{ID: "1004", Name: "存护·壁垒", Path: "存护", Element: "冰", Rarity: 4,
+				{ID: "1004", Name: "冻土·壁垒", Weapon: "长柄武器", Element: "冰", Rarity: 4,
 					HP: 1400, ATK: 420, DEF: 620, SPD: 90,
 					CritRate: 0.05, CritDMG: 0.50,
 					BasicMult: 0.9, SkillMult: 1.1, UltMult: 1.8},
-				{ID: "1005", Name: "丰饶·清泉", Path: "丰饶", Element: "雷", Rarity: 4,
+				{ID: "1005", Name: "疾风·吟游", Weapon: "法器", Element: "风", Rarity: 4,
 					HP: 1100, ATK: 480, DEF: 480, SPD: 98,
 					CritRate: 0.05, CritDMG: 0.50,
 					BasicMult: 0.9, SkillMult: 1.0, UltMult: 1.5},
-				{ID: "1006", Name: "同谐·回响", Path: "同谐", Element: "量子", Rarity: 4,
+				{ID: "1006", Name: "磐岩·重锋", Weapon: "双手剑", Element: "岩", Rarity: 4,
 					HP: 1050, ATK: 500, DEF: 450, SPD: 105,
 					CritRate: 0.05, CritDMG: 0.50,
 					BasicMult: 0.9, SkillMult: 1.2, UltMult: 1.6},

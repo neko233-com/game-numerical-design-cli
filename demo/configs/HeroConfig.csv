@@ -1,7 +1,7 @@
-id,name,path,element,rarity,base_hp,base_atk,base_def,base_spd,base_crit_rate,base_crit_dmg,skill_basic,skill_skill,skill_ultimate,note
-1001,开拓者·毁灭,毁灭,物理,5,1200,580,460,100,5,50,100101,100102,100103,demo-sanitized
-1002,巡星·猎手,巡猎,风,5,980,720,360,115,8,55,100201,100202,100203,demo-sanitized
-1003,智识·星火,智识,火,5,1020,700,380,96,5,50,100301,100302,100303,demo-sanitized
-1004,存护·壁垒,存护,冰,4,1400,420,620,90,5,50,100401,100402,100403,demo-sanitized
-1005,丰饶·清泉,丰饶,雷,4,1100,480,480,98,5,50,100501,100502,100503,demo-sanitized
-1006,同谐·回响,同谐,量子,4,1050,500,450,105,5,50,100601,100602,100603,demo-sanitized
+id,name,weapon,element,rarity,base_hp,base_atk,base_def,base_spd,base_crit_rate,base_crit_dmg,skill_basic,skill_skill,skill_ultimate,note
+1001,炎锋·旅者,单手剑,火,5,1200,580,460,100,5,50,100101,100102,100103,demo-sanitized
+1002,湍流·猎手,弓,水,5,980,720,360,115,8,55,100201,100202,100203,demo-sanitized
+1003,惊雷·秘法,法器,雷,5,1020,700,380,96,5,50,100301,100302,100303,demo-sanitized
+1004,冻土·壁垒,长柄武器,冰,4,1400,420,620,90,5,50,100401,100402,100403,demo-sanitized
+1005,疾风·吟游,法器,风,4,1100,480,480,98,5,50,100501,100502,100503,demo-sanitized
+1006,磐岩·重锋,双手剑,岩,4,1050,500,450,105,5,50,100601,100602,100603,demo-sanitized

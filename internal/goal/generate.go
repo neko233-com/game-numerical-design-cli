@@ -421,18 +421,22 @@ func statAt(base, mult float64) float64 {
 func buildCombatTables(g Goal, levels []levelRow, _ float64) ([]skillRow, []enemyRow) {
 	var skills []skillRow
 	var enemies []enemyRow
-	// 3 skills per archetype
+	// 3 skills per archetype: 普攻 / 元素战技 / 元素爆发
 	for _, a := range g.Combat.Archetypes {
+		elem := a.Element
+		if elem == "" {
+			elem = "物理"
+		}
 		skills = append(skills,
-			skillRow{ID: a.ID + "01", HeroID: a.ID, Name: a.Name + "-普攻", Kind: "basic",
+			skillRow{ID: a.ID + "01", HeroID: a.ID, Name: a.Name + "-普通攻击", Kind: "basic",
 				Mult: a.BasicMult, Hits: 1, Energy: 20, Target: "single",
-				Desc: fmt.Sprintf("对敌方单体造成等同于{Attack}%d%%的物理伤害", int(a.BasicMult*100))},
-			skillRow{ID: a.ID + "02", HeroID: a.ID, Name: a.Name + "-战技", Kind: "skill",
+				Desc: fmt.Sprintf("对敌方单体造成等同于{Attack}%d%%的%s伤害", int(a.BasicMult*100), elem)},
+			skillRow{ID: a.ID + "02", HeroID: a.ID, Name: a.Name + "-元素战技", Kind: "skill",
 				Mult: a.SkillMult, Hits: 2, Energy: 30, Target: "single",
-				Desc: fmt.Sprintf("对敌方单体造成2段，每段{Attack}%d%%的伤害", int(a.SkillMult*50))},
-			skillRow{ID: a.ID + "03", HeroID: a.ID, Name: a.Name + "-终结技", Kind: "ultimate",
+				Desc: fmt.Sprintf("对敌方单体造成2段，每段{Attack}%d%%的%s伤害", int(a.SkillMult*50), elem)},
+			skillRow{ID: a.ID + "03", HeroID: a.ID, Name: a.Name + "-元素爆发", Kind: "ultimate",
 				Mult: a.UltMult, Hits: 1, Energy: 0, Target: "aoe",
-				Desc: fmt.Sprintf("对敌方全体造成{Attack}%d%%的伤害", int(a.UltMult*100))},
+				Desc: fmt.Sprintf("对敌方全体造成{Attack}%d%%的%s伤害", int(a.UltMult*100), elem)},
 		)
 	}
 
@@ -473,7 +477,7 @@ func buildCombatTables(g Goal, levels []levelRow, _ float64) ([]skillRow, []enem
 	// Tune against average DPS win rate so all output roles land near the target.
 	var dps []Archetype
 	for _, a := range g.Combat.Archetypes {
-		if a.Path == "毁灭" || a.Path == "巡猎" || a.Path == "智识" || a.ATK >= avgArchetypeATK(g) {
+		if a.ATK >= avgArchetypeATK(g)*0.95 {
 			dps = append(dps, a)
 		}
 	}
@@ -492,7 +496,7 @@ func buildCombatTables(g Goal, levels []levelRow, _ float64) ([]skillRow, []enem
 		}
 		idx++
 		enemies = append(enemies, enemyRow{
-			ID: strconv.Itoa(idx), Name: fmt.Sprintf("裂界造物·Lv%d", lv), Level: lv,
+			ID: strconv.Itoa(idx), Name: fmt.Sprintf("遗迹机兵·Lv%d", lv), Level: lv,
 			HP:   math.Round(avgHP * mult * hpMult),
 			ATK:  math.Round(avgATK * mult * enemyAtk),
 			DEF:  math.Round(avgDEF * mult * g.Combat.EnemyDefMult),
@@ -506,7 +510,7 @@ func buildCombatTables(g Goal, levels []levelRow, _ float64) ([]skillRow, []enem
 		multMax = 1
 	}
 	enemies = append(enemies, enemyRow{
-		ID: "2901", Name: "末日兽·演示", Level: g.Progress.MaxLevel,
+		ID: "2901", Name: "风蚀之核·演示", Level: g.Progress.MaxLevel,
 		HP:   math.Round(avgHP * multMax * hpMult * 1.55),
 		ATK:  math.Round(avgATK * multMax * enemyAtk * 1.05),
 		DEF:  math.Round(avgDEF * multMax * g.Combat.EnemyDefMult),
@@ -648,7 +652,7 @@ func runCombatChecks(g Goal, skills []skillRow, enemies []enemyRow, levels []lev
 			}
 			ok := true
 			note := "ok"
-			isDPS := a.Path == "毁灭" || a.Path == "巡猎" || a.Path == "智识" || a.ATK >= avgArchetypeATK(g)
+			isDPS := a.ATK >= avgArchetypeATK(g)*0.95
 			if tg.e.Kind == "elite" {
 				if isDPS {
 					if res.AttackerWinRate < g.Combat.TargetWinRate-0.18 || res.AttackerWinRate > g.Combat.TargetWinRate+0.25 {
@@ -706,10 +710,20 @@ func avgArchetypeATK(g Goal) float64 {
 	return s / float64(len(g.Combat.Archetypes))
 }
 
+// isDPSWeapon marks primary damage weapons in the Genshin-like demo.
+func isDPSWeapon(w string) bool {
+	switch w {
+	case "单手剑", "双手剑", "长柄武器", "弓":
+		return true
+	default:
+		return false
+	}
+}
+
 func heroTable(g Goal, levels []levelRow) *tablekit.Table {
 	t := &tablekit.Table{
 		Headers: []string{
-			"id", "name", "path", "element", "rarity",
+			"id", "name", "weapon", "element", "rarity",
 			"base_hp", "base_atk", "base_def", "base_spd",
 			"base_crit_rate", "base_crit_dmg",
 			"skill_basic", "skill_skill", "skill_ultimate",
@@ -718,7 +732,7 @@ func heroTable(g Goal, levels []levelRow) *tablekit.Table {
 	}
 	for _, a := range g.Combat.Archetypes {
 		t.Rows = append(t.Rows, []string{
-			a.ID, a.Name, a.Path, a.Element, strconv.Itoa(a.Rarity),
+			a.ID, a.Name, a.Weapon, a.Element, strconv.Itoa(a.Rarity),
 			fmt.Sprintf("%.0f", a.HP), fmt.Sprintf("%.0f", a.ATK),
 			fmt.Sprintf("%.0f", a.DEF), fmt.Sprintf("%.0f", a.SPD),
 			fmt.Sprintf("%.0f", a.CritRate*100), fmt.Sprintf("%.0f", a.CritDMG*100),
@@ -842,13 +856,13 @@ func itemTable(g Goal) *tablekit.Table {
 		},
 	}
 	items := [][7]string{
-		{"1001", "信用点", "currency", "1", "999999", "0", "基础货币"},
-		{"1002", "星琼", "currency", "4", "999999", "0", "稀有货币（演示）"},
-		{"2001", "角色经验", "exp", "2", "999999", "0", "升级材料"},
-		{"2002", "漫游指南", "material", "3", "999", "100", "行迹材料（演示）"},
-		{"2003", "遗器残骸", "material", "3", "999", "50", "装备材料（演示）"},
-		{"3001", "星轨专票", "gacha_ticket", "5", "999", "0", "抽卡券（演示）"},
-		{"4001", "开拓者碎片", "hero_shard", "4", "999", "0", "英雄碎片（演示）"},
+		{"1001", "摩拉", "currency", "1", "999999", "0", "基础货币"},
+		{"1002", "原石", "currency", "5", "999999", "0", "稀有货币（演示）"},
+		{"2001", "冒险阅历", "exp", "2", "999999", "0", "冒险等级经验（演示）"},
+		{"2002", "大英雄的经验", "material", "3", "9999", "0", "角色经验书（演示）"},
+		{"2003", "武器突破矿石", "material", "3", "999", "50", "武器培养材料（演示）"},
+		{"3001", "相遇之缘", "gacha_ticket", "4", "999", "0", "常驻祈愿券（演示）"},
+		{"4001", "命星·演示", "hero_shard", "5", "999", "0", "角色命星（演示）"},
 	}
 	for _, it := range items {
 		t.Rows = append(t.Rows, []string{it[0], it[1], it[2], it[3], it[4], it[5], it[6]})
@@ -871,7 +885,7 @@ func gachaTable(g Goal, softStart int, softStep float64) *tablekit.Table {
 	}
 	// 5-star
 	t.Rows = append(t.Rows, []string{
-		"1", "角色活动跃迁", "5",
+		"1", "角色活动祈愿", "5",
 		fmt.Sprintf("%.3f", g.Gacha.BaseRate5*100),
 		strconv.Itoa(softStart),
 		fmt.Sprintf("%.2f", softStep*100),

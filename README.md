@@ -151,7 +151,7 @@ gnd recipe show early-fast-growth
 gnd ndd new --name "装备强化" --system economy --out ndd-equip.md
 ```
 
-### 9. Demo：目标驱动配置（崩铁式）
+### 9. Demo：目标驱动配置（原神式）
 
 ```bash
 gnd demo init --dir demo --xlsx          # 生成 goal.yaml + 英雄/技能/任务/敌人/抽卡表

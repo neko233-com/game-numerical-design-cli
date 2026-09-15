@@ -1,5 +1,5 @@
-name: 星轨数值Demo
-description: 简化崩铁式：命途/属性/等级/技能/任务/抽卡，用于数值验证
+name: 提瓦特数值Demo
+description: 简化原神式：元素/武器/等级/技能/任务/祈愿，用于数值验证（脱敏虚构）
 version: 1
 progress:
     max_level: 40
@@ -18,9 +18,9 @@ combat:
     target_turns: 8
     archetypes:
         - id: "1001"
-          name: 开拓者·毁灭
-          path: 毁灭
-          element: 物理
+          name: 炎锋·旅者
+          weapon: 单手剑
+          element: 火
           rarity: 5
           hp: 1200
           atk: 580
@@ -32,9 +32,9 @@ combat:
           skill_mult: 1.4
           ult_mult: 2.8
         - id: "1002"
-          name: 巡星·猎手
-          path: 巡猎
-          element: 风
+          name: 湍流·猎手
+          weapon: 弓
+          element: 水
           rarity: 5
           hp: 980
           atk: 720
@@ -46,9 +46,9 @@ combat:
           skill_mult: 1.8
           ult_mult: 3.2
         - id: "1003"
-          name: 智识·星火
-          path: 智识
-          element: 火
+          name: 惊雷·秘法
+          weapon: 法器
+          element: 雷
           rarity: 5
           hp: 1020
           atk: 700
@@ -60,8 +60,8 @@ combat:
           skill_mult: 1.6
           ult_mult: 3.5
         - id: "1004"
-          name: 存护·壁垒
-          path: 存护
+          name: 冻土·壁垒
+          weapon: 长柄武器
           element: 冰
           rarity: 4
           hp: 1400
@@ -74,9 +74,9 @@ combat:
           skill_mult: 1.1
           ult_mult: 1.8
         - id: "1005"
-          name: 丰饶·清泉
-          path: 丰饶
-          element: 雷
+          name: 疾风·吟游
+          weapon: 法器
+          element: 风
           rarity: 4
           hp: 1100
           atk: 480
@@ -88,9 +88,9 @@ combat:
           skill_mult: 1
           ult_mult: 1.5
         - id: "1006"
-          name: 同谐·回响
-          path: 同谐
-          element: 量子
+          name: 磐岩·重锋
+          weapon: 双手剑
+          element: 岩
           rarity: 4
           hp: 1050
           atk: 500

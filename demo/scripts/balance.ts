@@ -35,7 +35,7 @@ for (const row of table.rows as string[][]) {
       spd: hero.spd, crit_rate: 0.15, crit_dmg: 0.5, skill_mult: 1.4,
     },
     {
-      name: "裂界造物", hp: 9000, atk: 500, def: 2500, spd: 95,
+      name: "遗迹机兵", hp: 9000, atk: 500, def: 2500, spd: 95,
       crit_rate: 0.05, crit_dmg: 0.5, skill_mult: 1,
     },
     150,
