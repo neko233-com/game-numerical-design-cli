@@ -1,8 +1,8 @@
 # gnd — Game Numerical Design CLI
 
-游戏数值设计命令行工具：把数值策划常用的成长曲线、战斗/经济/抽卡模拟、平衡性分析、手感量化与设计菜谱沉淀成可复用、可校验的 CLI。
+游戏数值设计命令行工具：把数值策划常用的成长曲线、战斗/经济/抽卡模拟、平衡性分析、手感量化、多格式配置表读写与设计菜谱沉淀成可复用、可校验的 CLI。
 
-> Go 1.27+ · 零第三方依赖 · Windows / macOS / Linux
+> Go 1.27+ · Windows / macOS / Linux
 
 ## 安装
 
@@ -22,7 +22,8 @@ go build -o gnd ./cmd/gnd
 | `gnd gacha` | 软/硬保底分布模拟、P50/P90、E[pulls]、软保底建议 | 概率设计 |
 | `gnd balance` | 锚点依据校验、敏感度排序、维度打分、胜率对照 | 平衡性分析框架 |
 | `gnd feel` | 「打击感太轻」等模糊描述 ↔ 量化阈值 | 手感量化 |
-| `gnd validate` | CSV 数值表安全检查（溢出/断崖/单调/重复 ID） | 校验脚本 |
+| `gnd table` | **xlsx/csv/tsv/json/yaml** 跨格式转换、改值、加行、批量 | 配置表工具链 |
+| `gnd validate` | 多格式数值表安全检查（溢出/断崖/单调/重复 ID） | 校验脚本 |
 | `gnd recipe` | 数值菜谱：目标 → 模型 → 参数区间 → 坑 | 菜谱库 |
 | `gnd ndd` | 生成数值设计文档（NDD）骨架 + 评审 checklist | 流程沉淀 |
 
@@ -89,19 +90,54 @@ gnd feel decode --readings "daily_prod_cons_ratio=1.5,hit_stop_frames=4"
 
 ### 6. 数值表校验
 
-```csv
-# levels.csv
-id,name,exp,hp
-1,Lv1,100,500
-2,Lv2,220,1100
-3,Lv3,500,2500
-```
+支持 csv / tsv / json / yaml / xlsx：
 
 ```bash
 gnd validate table --file levels.csv --monotonic exp,hp --cliff 0.5
+gnd validate table --file levels.xlsx --sheet 等级
+gnd validate table --file drop.json
 ```
 
-### 7. 菜谱 & NDD
+### 7. 多格式配置表（xlsx / csv / tsv / json / yaml）
+
+统一按「首行表头 + 数据行」处理；xlsx 可用 `--sheet` / `--data-start`（五行表头可设 3=Client 或 5=Server）。
+
+```bash
+# 跨格式转换
+gnd table convert levels.xlsx levels.csv --sheet 等级
+gnd table convert levels.csv levels.json
+gnd table convert levels.json levels.yaml
+
+# 查看
+gnd table schema levels.xlsx --sheet 等级
+gnd table sheets levels.xlsx
+gnd table rows levels.csv --count 10
+gnd table get levels.xlsx --id 1001 --field atk --sheet 等级
+
+# 改值（默认 dry-run，加 --write 落盘）
+gnd table set levels.xlsx --sheet 等级 --id 1001 --field atk --value 800
+gnd table set levels.xlsx --sheet 等级 --id 1001 --field atk --value 800 --expected 700 --write
+
+# 加行 / upsert
+gnd table add levels.csv --values '{"id":"1002","name":"新怪","hp":"1200"}' --write
+gnd table upsert levels.yaml --values '{"id":"1001","atk":"850"}' --write
+
+# 批量（JSON）
+# {"changes":[{"id":"1001","field":"atk","value":"800"}, ...],
+#  "upserts":[{"id":"2001","name":"Boss","hp":"99999"}]}
+gnd table batch levels.xlsx --sheet 等级 --input changes.json --write
+
+# 写到新文件而不是原地
+gnd table set levels.csv --id 2 --field exp --value 300 --write --out levels-tuned.csv
+```
+
+说明：
+- 默认 **dry-run**，只打印 `row/id/field/old/new` 计划；`--write` 才落盘。
+- `--expected` 做乐观锁：当前值不符则拒绝写入。
+- JSON/YAML 保存为 `{"headers":[...],"rows":[[...]]}`，保证列序稳定；加载时兼容「对象数组」。
+- 所有单元格按字符串处理，避免大整数 ID 精度丢失。
+
+### 8. 菜谱 & NDD
 
 ```bash
 gnd recipe list
@@ -118,6 +154,7 @@ gnd ndd new --name "装备强化" --system economy --out ndd-equip.md
 3. **手感可验收** — 模糊描述翻译成 metric + 健康带，上线前可打勾。
 4. **极端安全** — 数值表检查溢出、断崖、单调破坏、死资源货币。
 5. **调参先敏感度** — 把精调精力放在 influence Top 参数上。
+6. **改表先 dry-run** — `gnd table` 默认只出计划，显式 `--write` 才改文件。
 
 ## 项目结构
 
@@ -130,6 +167,7 @@ internal/
   gacha/           抽卡分布与保底
   balance/         锚点 / 敏感度 / 维度
   feel/            手感量化表
+  tablekit/        xlsx/csv/tsv/json/yaml 读写与转换
   validate/        数值表校验
   recipe/          菜谱库
   report/          表格 / JSON / sparkline 输出

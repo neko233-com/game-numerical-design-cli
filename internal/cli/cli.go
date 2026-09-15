@@ -55,6 +55,8 @@ func (a *App) Run() int {
 		return a.cmdBalance(rest)
 	case "feel":
 		return a.cmdFeel(rest)
+	case "table":
+		return a.cmdTable(rest)
 	case "validate":
 		return a.cmdValidate(rest)
 	case "recipe":
@@ -81,7 +83,8 @@ Commands:
   gacha      抽卡分布模拟（软/硬保底、P50/P90、累计出货率）
   balance    锚点校验 / 敏感度分析 / 维度打分 / 胜率对照
   feel       手感模糊描述 ↔ 量化指标
-  validate   数值表安全检查（CSV）
+  table      多格式配置表：xlsx/csv/tsv/json/yaml 读写转换与改值
+  validate   数值表安全检查（csv/tsv/json/yaml/xlsx）
   recipe     数值「菜谱」库：目标 → 模型 → 参数区间
   ndd        生成数值设计文档（NDD）骨架
   version    打印版本
@@ -129,8 +132,13 @@ func (a *App) helpTopic(topic string) int {
 	case "feel":
 		fmt.Fprint(a.Stdout, `gnd feel list|decode|encode
 `)
+	case "table":
+		fmt.Fprint(a.Stdout, `gnd table convert|schema|get|rows|set|add|upsert|batch|sheets
+  Formats: xlsx/csv/tsv/json/yaml
+  Default dry-run; add --write to apply. Use --sheet / --data-start for xlsx.
+`)
 	case "validate":
-		fmt.Fprint(a.Stdout, `gnd validate table --file data.csv [--cliff 0.5] [--monotonic exp,hp]
+		fmt.Fprint(a.Stdout, `gnd validate table --file data.{csv,tsv,json,yaml,xlsx} [--sheet S] [--cliff 0.5] [--monotonic exp,hp]
 `)
 	case "recipe":
 		fmt.Fprint(a.Stdout, `gnd recipe list|show <id>|search <q>|tags

@@ -3,12 +3,14 @@ package cli
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/neko233-com/game-numerical-design-cli/internal/feel"
 	"github.com/neko233-com/game-numerical-design-cli/internal/recipe"
 	"github.com/neko233-com/game-numerical-design-cli/internal/report"
+	"github.com/neko233-com/game-numerical-design-cli/internal/tablekit"
 	"github.com/neko233-com/game-numerical-design-cli/internal/validate"
 )
 
@@ -141,8 +143,11 @@ func (a *App) feelEncode(args []string) int {
 
 func (a *App) cmdValidate(args []string) int {
 	if len(args) == 0 || args[0] == "help" || args[0] == "-h" {
-		fmt.Fprint(a.Stdout, `usage: gnd validate table --file data.csv
-  CSV header: id,name,field1,field2,...
+		fmt.Fprint(a.Stdout, `usage: gnd validate table --file data.{csv,tsv,json,yaml,xlsx}
+  CSV/TSV header: id,name,field1,field2,...
+  JSON/YAML: array of objects; XLSX: first row headers (or --data-start)
+  --sheet NAME          xlsx sheet
+  --data-start N        xlsx header row (default 1)
   --cliff 0.5          relative step warn threshold
   --monotonic exp,hp   fields that must be non-decreasing by id
   --allow-negative
@@ -156,7 +161,9 @@ func (a *App) cmdValidate(args []string) int {
 		return 2
 	}
 	fs := a.newFlagSet("validate table")
-	file := fs.String("file", "", "csv path (or - for stdin)")
+	file := fs.String("file", "", "table path (csv/tsv/json/yaml/xlsx) or - for stdin csv")
+	sheet := fs.String("sheet", "", "xlsx sheet")
+	dataStart := fs.Int("data-start", 1, "xlsx header row")
 	cliff := fs.Float64("cliff", 0.5, "cliff threshold")
 	mono := fs.String("monotonic", "", "comma fields")
 	allowNeg := fs.Bool("allow-negative", false, "allow negative values")
@@ -168,25 +175,48 @@ func (a *App) cmdValidate(args []string) int {
 	if *file == "" {
 		return a.fail(fmt.Errorf("--file is required"))
 	}
-	var data []byte
-	var err error
-	if *file == "-" {
-		data, err = readAll(a)
-	} else {
-		data, err = os.ReadFile(*file)
-	}
-	if err != nil {
-		return a.fail(err)
-	}
-	rows, err := validate.ParseCSVTable(string(data))
-	if err != nil {
-		return a.fail(err)
-	}
 	opt := validate.Options{
 		GrowthCliff:   *cliff,
 		AllowNegative: *allowNeg,
 		MaxSafe:       *maxSafe,
 		Monotonic:     splitCSV(*mono),
+	}
+	tOpt := tablekit.Options{Sheet: *sheet, DataStartRow: *dataStart}
+
+	var rows []validate.Row
+	if *file == "-" {
+		data, err := readAll(a)
+		if err != nil {
+			return a.fail(err)
+		}
+		parsed, err := validate.ParseCSVTable(string(data))
+		if err != nil {
+			return a.fail(err)
+		}
+		rows = parsed
+	} else if strings.EqualFold(filepath.Ext(*file), ".csv") || strings.EqualFold(filepath.Ext(*file), ".tsv") {
+		// keep legacy path for csv/tsv (preserves non-numeric columns as names)
+		data, err := os.ReadFile(*file)
+		if err != nil {
+			return a.fail(err)
+		}
+		parsed, err := validate.ParseCSVTable(string(data))
+		if err != nil {
+			// fall back to tablekit if header layout differs
+			t, terr := tablekit.Load(*file, tOpt)
+			if terr != nil {
+				return a.fail(err)
+			}
+			rows = tableToValidateRows(t)
+		} else {
+			rows = parsed
+		}
+	} else {
+		t, err := tablekit.Load(*file, tOpt)
+		if err != nil {
+			return a.fail(err)
+		}
+		rows = tableToValidateRows(t)
 	}
 	issues := validate.Table(rows, opt)
 	if *format == "json" {
