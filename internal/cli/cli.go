@@ -2,11 +2,15 @@
 package cli
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
 	"os"
 	"strings"
+	"time"
+
+	"github.com/neko233-com/game-numerical-design-cli/internal/calllog"
 )
 
 // Version of the CLI.
@@ -17,6 +21,8 @@ type App struct {
 	Stdout io.Writer
 	Stderr io.Writer
 	Args   []string
+	// NoCallLog disables invocation logging (used by `logs` itself / tests).
+	NoCallLog bool
 }
 
 // Run parses args and dispatches. Returns process exit code.
@@ -27,7 +33,38 @@ func (a *App) Run() int {
 	if a.Stderr == nil {
 		a.Stderr = os.Stderr
 	}
+
+	// tee stdout/stderr so call log captures agent-visible failures
+	var outBuf, errBuf bytes.Buffer
+	realOut, realErr := a.Stdout, a.Stderr
+	a.Stdout = io.MultiWriter(realOut, &outBuf)
+	a.Stderr = io.MultiWriter(realErr, &errBuf)
+
+	started := time.Now()
 	args := a.Args
+	code := a.dispatch(args)
+
+	// persist invocation (skip for logs command to avoid recursion noise)
+	if !a.NoCallLog && !(len(args) > 0 && args[0] == "logs") {
+		lg := calllog.New(calllog.Options{})
+		cmd, dirF, goalF, preset := calllog.ExtractMeta(args)
+		cwd, _ := os.Getwd()
+		_ = lg.Append(calllog.Entry{
+			Cmd: cmd, Argv: append([]string(nil), args...), Cwd: cwd,
+			Exit: code, DurationMS: time.Since(started).Milliseconds(),
+			StdoutTail: calllog.Tail(outBuf.String(), calllog.StdoutTailCap),
+			StderrTail: calllog.Tail(errBuf.String(), calllog.StdoutTailCap),
+			DirFlag:    dirF, GoalFlag: goalF, Preset: preset,
+			Env: map[string]string{
+				"GND_LOG":     os.Getenv("GND_LOG"),
+				"GND_LOG_DIR": os.Getenv("GND_LOG_DIR"),
+			},
+		})
+	}
+	return code
+}
+
+func (a *App) dispatch(args []string) int {
 	if len(args) == 0 {
 		a.printRootHelp()
 		return 0
@@ -67,6 +104,8 @@ func (a *App) Run() int {
 		return a.cmdSim(rest)
 	case "report":
 		return a.cmdReport(rest)
+	case "logs":
+		return a.cmdLogs(rest)
 	case "validate":
 		return a.cmdValidate(rest)
 	case "recipe":
@@ -99,6 +138,7 @@ Commands:
   script     内嵌 TS/JS 脚本（esbuild+goja，无需装 Node）
   sim        并行战斗模拟器（≤1000 并发，每场日志，可查询历史）
   report     HTML 报告（内联 SVG 图表）：demo / sim / curve
+  logs       调用日志（5MB LRU）：list/show/search/stats — agent 排查用
   validate   数值表安全检查（csv/tsv/json/yaml/xlsx）
   recipe     数值「菜谱」库：目标 → 模型 → 参数区间
   ndd        生成数值设计文档（NDD）骨架

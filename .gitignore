@@ -20,5 +20,10 @@ tmp/
 
 # Simulation artifacts (logs are regenerated; never commit)
 .gnd/
+.gnd/logs/
+.gnd/logs/calls.jsonl
 sim/
 **/logs/battle_*.json
+
+# Agent call-log store (5MB LRU, local only)
+*.gnd-log

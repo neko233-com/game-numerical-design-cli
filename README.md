@@ -27,6 +27,7 @@ go build -o gnd ./cmd/gnd
 | `gnd script` | **内嵌 TS/JS**（esbuild+goja，无需装 Node） | 自定义验算 |
 | `gnd sim` | 并行战斗模拟（≤1000 并发，每场日志，可查询） | 模拟器 |
 | `gnd apply` | **一句话配置 + 自校验**（配新/改旧，改旧需确认） | 生产流水线 |
+| `gnd logs` | **调用日志**（5MB LRU）：list/show/search — agent 排查免重跑 | 可观测性 |
 | `gnd report` | **HTML 报告**（内联 SVG 曲线/柱状/直方图，默认 .html） | 交付报告 |
 | `gnd validate` | 多格式数值表安全检查（溢出/断崖/单调/重复 ID） | 校验脚本 |
 | `gnd recipe` | 数值菜谱：目标 → 模型 → 参数区间 → 坑 | 菜谱库 |
@@ -226,6 +227,26 @@ gnd apply "preset=genshin max_level=40" --dir out --write --yes --strict --forma
 - 改旧无确认 → **exit 3**
 - 写盘后自动回读验证 + 可选 `--sim N` 模拟冒烟
 - `--strict`：告警也视为失败
+
+### 14. 调用日志（Agent 排查，5MB LRU）
+
+每次 CLI 调用自动记入 `.gnd/logs/calls.jsonl`（已 gitignore，上限 5MB，超限裁掉最旧条目）。
+
+```bash
+gnd logs list --limit 20
+gnd logs list --fail-only
+gnd logs show <id-prefix>          # argv / exit / stdout·stderr 尾部
+gnd logs search --contains "error"
+gnd logs stats
+gnd logs clear
+gnd logs path
+```
+
+环境变量：
+- `GND_LOG=0` 关闭
+- `GND_LOG_DIR=/path` 自定义目录
+
+Agent 调试模式：失败后直接 `gnd logs list --fail-only` + `gnd logs show <id>`，**不必重跑**即可看到上次命令、退出码与输出尾部。
 
 ### 13. HTML 报告（默认交付格式）
 
