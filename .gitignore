@@ -1,0 +1,19 @@
+# Binaries
+gnd
+gnd.exe
+*.exe
+*.test
+*.out
+
+# Go
+vendor/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local notes
+*.local.md
+tmp/
