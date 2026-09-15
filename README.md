@@ -26,6 +26,7 @@ go build -o gnd ./cmd/gnd
 | `gnd demo` | 目标驱动脚手架：goal → 英雄/技能/任务/敌人/抽卡表 | 智能配置 |
 | `gnd script` | **内嵌 TS/JS**（esbuild+goja，无需装 Node） | 自定义验算 |
 | `gnd sim` | 并行战斗模拟（≤1000 并发，每场日志，可查询） | 模拟器 |
+| `gnd report` | **HTML 报告**（内联 SVG 曲线/柱状/直方图，默认 .html） | 交付报告 |
 | `gnd validate` | 多格式数值表安全检查（溢出/断崖/单调/重复 ID） | 校验脚本 |
 | `gnd recipe` | 数值菜谱：目标 → 模型 → 参数区间 → 坑 | 菜谱库 |
 | `gnd ndd` | 生成数值设计文档（NDD）骨架 + 评审 checklist | 流程沉淀 |
@@ -191,6 +192,26 @@ gnd sim clear
 - 历史查询：`.gnd/sim/index.json` + `manifest.json`。
 - `.gitignore` 已忽略 `.gnd/` 与战斗日志。
 
+### 12. HTML 报告（默认交付格式）
+
+自包含单文件，内联 SVG，无外链，浏览器直接打开。
+
+```bash
+# Demo 全量报告：成长曲线 / 节奏 / 战斗胜率 / 软保底 / 配置表 / 告警
+gnd report demo --goal demo/goal.yaml --out demo/report.html
+
+# 模拟 run 报告（sim run 结束也会自动写 report.html）
+gnd sim run --n 500 --name pvp
+gnd report sim --root .gnd/sim                  # 最新 run
+gnd report sim --run run_xxx --sample 30
+
+# 单独画成长曲线
+gnd report curve --kind piecewise-log --s1 1.8 --s2 0.6 --break 20 --out curve.html
+gnd demo check --goal demo/goal.yaml --html demo/report.html
+```
+
+图表包括：每级经验、累计经验、属性倍率、升级天数 vs 目标、精英/Boss 胜率柱状图、软保底概率曲线、模拟回合直方图、KPI 卡片。
+
 ## 设计原则（内置在工具里）
 
 1. **锚点必须有依据** — `gnd balance anchors` 对无 rationale 的锚点直接告警。
@@ -215,6 +236,7 @@ internal/
   goal/            目标 → 配置表生成
   script/          内嵌 TS/JS（esbuild+goja）
   simulator/       并行战斗模拟器 + 日志/索引
+  htmlreport/      HTML 报告 + 内联 SVG 图表
   validate/        数值表校验
   recipe/          菜谱库
   report/          表格 / JSON / sparkline 输出

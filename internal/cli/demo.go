@@ -9,6 +9,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/neko233-com/game-numerical-design-cli/internal/goal"
+	"github.com/neko233-com/game-numerical-design-cli/internal/htmlreport"
 	"github.com/neko233-com/game-numerical-design-cli/internal/report"
 )
 
@@ -120,12 +121,20 @@ func (a *App) demoCheck(args []string) int {
 	fs := a.newFlagSet("demo check")
 	goalPath := fs.String("goal", "demo/goal.yaml", "goal file")
 	format := fs.String("format", "table", "table|json")
+	htmlOut := fs.String("html", "", "also write HTML report to this path")
 	if err := parseTableFlags(fs, args); err != nil {
 		return 2
 	}
 	g, gen, code := a.loadAndBuild(*goalPath)
 	if code != 0 {
 		return code
+	}
+	if *htmlOut != "" {
+		rep := htmlreport.BuildDemoReport(gen, g)
+		if err := rep.WriteFile(*htmlOut); err != nil {
+			return a.fail(err)
+		}
+		fmt.Fprintf(a.Stdout, "html report: %s\n", absPrint(*htmlOut))
 	}
 	issues := gen.CheckTables()
 	if *format == "json" {

@@ -63,6 +63,8 @@ func (a *App) Run() int {
 		return a.cmdScript(rest)
 	case "sim":
 		return a.cmdSim(rest)
+	case "report":
+		return a.cmdReport(rest)
 	case "validate":
 		return a.cmdValidate(rest)
 	case "recipe":
@@ -93,6 +95,7 @@ Commands:
   demo       目标驱动 demo：init/build/check/sim（崩铁式数值脚手架）
   script     内嵌 TS/JS 脚本（esbuild+goja，无需装 Node）
   sim        并行战斗模拟器（≤1000 并发，每场日志，可查询历史）
+  report     HTML 报告（内联 SVG 图表）：demo / sim / curve
   validate   数值表安全检查（csv/tsv/json/yaml/xlsx）
   recipe     数值「菜谱」库：目标 → 模型 → 参数区间
   ndd        生成数值设计文档（NDD）骨架

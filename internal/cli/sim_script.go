@@ -11,6 +11,7 @@ import (
 
 	"github.com/neko233-com/game-numerical-design-cli/internal/combat"
 	"github.com/neko233-com/game-numerical-design-cli/internal/curves"
+	"github.com/neko233-com/game-numerical-design-cli/internal/htmlreport"
 	"github.com/neko233-com/game-numerical-design-cli/internal/report"
 	"github.com/neko233-com/game-numerical-design-cli/internal/script"
 	"github.com/neko233-com/game-numerical-design-cli/internal/simulator"
@@ -263,6 +264,7 @@ func (a *App) simRun(args []string) int {
 		seed                            int64
 		name, root, format              string
 		keepPrior                       bool
+		htmlOut                         string
 		aHP, aATK, aDEF, aSPD, aCR, aCD float64
 		aSk                             float64
 		dHP, dATK, dDEF, dSPD, dCR, dCD float64
@@ -275,6 +277,7 @@ func (a *App) simRun(args []string) int {
 	fs.StringVar(&name, "name", "sim", "run name")
 	fs.StringVar(&root, "root", simulator.DefaultDir, "sim root dir")
 	fs.StringVar(&format, "format", "table", "table|json")
+	fs.StringVar(&htmlOut, "html", "", "write HTML report path (empty = <root>/<run>/report.html when --html=true via auto)")
 	fs.BoolVar(&keepPrior, "keep-prior", false, "do not clear prior runs")
 	fs.IntVar(&logEvery, "log-every", 1, "write log every k battles")
 	fs.IntVar(&level, "level", 0, "level for --from-config stat mult")
@@ -331,6 +334,16 @@ func (a *App) simRun(args []string) int {
 	if err != nil {
 		return a.fail(err)
 	}
+	// Always emit an HTML report next to the run (default .html deliverable).
+	repPath := htmlOut
+	if repPath == "" {
+		repPath = filepath.Join(root, man.RunID, "report.html")
+	}
+	if err := a.writeSimHTML(root, man, repPath); err != nil {
+		fmt.Fprintf(a.Stderr, "warn: html report: %v\n", err)
+	} else {
+		fmt.Fprintf(a.Stdout, "html: %s\n", absPrint(repPath))
+	}
 	if format == "json" {
 		return exitJSON(a, man)
 	}
@@ -349,6 +362,23 @@ func (a *App) simRun(args []string) int {
 		{"duration_ms", strconv.FormatInt(man.DurationMS, 10)},
 	})
 	return 0
+}
+
+func (a *App) writeSimHTML(root string, man *simulator.RunManifest, out string) error {
+	r := simulator.NewRunner(root)
+	var battles []simulator.BattleLog
+	names, _ := r.ListBattles(man.RunID)
+	for i, n := range names {
+		if i >= 16 {
+			break
+		}
+		var bid int
+		fmt.Sscanf(n, "battle_%d.json", &bid)
+		if bl, err := r.GetBattle(man.RunID, bid); err == nil {
+			battles = append(battles, *bl)
+		}
+	}
+	return htmlreport.BuildSimReport(man, battles).WriteFile(out)
 }
 
 func (a *App) loadPairFromConfig(dir, heroID, enemyID string, level int) ([2]simulator.Unit, error) {
