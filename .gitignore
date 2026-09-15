@@ -1,6 +1,6 @@
 # Binaries
-gnd
-gnd.exe
+/gnd
+/gnd.exe
 *.exe
 *.test
 *.out
