@@ -1,0 +1,4 @@
+id,name,rarity,base_rate_pct,soft_pity_start,soft_pity_step_pct,hard_pity,featured_rate_pct,guarantee_featured,note
+1,角色活动祈愿,5,0.800,40,4.96,60,50.0,true,sanitized demo
+2,4星保底,4,6.000,0,0,10,0,false,4星硬保底
+3,3星光锥,3,93.20,0,0,0,0,false,filler

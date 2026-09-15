@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -149,6 +150,9 @@ func (gen *Generated) WriteAll(dir string, writeXLSX bool) ([]string, error) {
 		"GachaPoolConfig": gen.Gacha,
 	}
 	var written []string
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return nil, err
+	}
 	for name, t := range tables {
 		if t == nil {
 			continue
@@ -421,20 +425,21 @@ func statAt(base, mult float64) float64 {
 func buildCombatTables(g Goal, levels []levelRow, _ float64) ([]skillRow, []enemyRow) {
 	var skills []skillRow
 	var enemies []enemyRow
-	// 3 skills per archetype: 普攻 / 元素战技 / 元素爆发
+	sk := skillNamesForGenre(g.Genre)
+	// 3 skills per archetype
 	for _, a := range g.Combat.Archetypes {
 		elem := a.Element
 		if elem == "" {
 			elem = "物理"
 		}
 		skills = append(skills,
-			skillRow{ID: a.ID + "01", HeroID: a.ID, Name: a.Name + "-普通攻击", Kind: "basic",
+			skillRow{ID: a.ID + "01", HeroID: a.ID, Name: a.Name + "-" + sk.basic, Kind: "basic",
 				Mult: a.BasicMult, Hits: 1, Energy: 20, Target: "single",
 				Desc: fmt.Sprintf("对敌方单体造成等同于{Attack}%d%%的%s伤害", int(a.BasicMult*100), elem)},
-			skillRow{ID: a.ID + "02", HeroID: a.ID, Name: a.Name + "-元素战技", Kind: "skill",
+			skillRow{ID: a.ID + "02", HeroID: a.ID, Name: a.Name + "-" + sk.skill, Kind: "skill",
 				Mult: a.SkillMult, Hits: 2, Energy: 30, Target: "single",
 				Desc: fmt.Sprintf("对敌方单体造成2段，每段{Attack}%d%%的%s伤害", int(a.SkillMult*50), elem)},
-			skillRow{ID: a.ID + "03", HeroID: a.ID, Name: a.Name + "-元素爆发", Kind: "ultimate",
+			skillRow{ID: a.ID + "03", HeroID: a.ID, Name: a.Name + "-" + sk.ult, Kind: "ultimate",
 				Mult: a.UltMult, Hits: 1, Energy: 0, Target: "aoe",
 				Desc: fmt.Sprintf("对敌方全体造成{Attack}%d%%的%s伤害", int(a.UltMult*100), elem)},
 		)
@@ -496,7 +501,7 @@ func buildCombatTables(g Goal, levels []levelRow, _ float64) ([]skillRow, []enem
 		}
 		idx++
 		enemies = append(enemies, enemyRow{
-			ID: strconv.Itoa(idx), Name: fmt.Sprintf("遗迹机兵·Lv%d", lv), Level: lv,
+			ID: strconv.Itoa(idx), Name: fmt.Sprintf("%s·Lv%d", eliteNameForGenre(g.Genre), lv), Level: lv,
 			HP:   math.Round(avgHP * mult * hpMult),
 			ATK:  math.Round(avgATK * mult * enemyAtk),
 			DEF:  math.Round(avgDEF * mult * g.Combat.EnemyDefMult),
@@ -510,7 +515,7 @@ func buildCombatTables(g Goal, levels []levelRow, _ float64) ([]skillRow, []enem
 		multMax = 1
 	}
 	enemies = append(enemies, enemyRow{
-		ID: "2901", Name: "风蚀之核·演示", Level: g.Progress.MaxLevel,
+		ID: "2901", Name: bossNameForGenre(g.Genre) + "·演示", Level: g.Progress.MaxLevel,
 		HP:   math.Round(avgHP * multMax * hpMult * 1.55),
 		ATK:  math.Round(avgATK * multMax * enemyAtk * 1.05),
 		DEF:  math.Round(avgDEF * multMax * g.Combat.EnemyDefMult),
@@ -710,10 +715,17 @@ func avgArchetypeATK(g Goal) float64 {
 	return s / float64(len(g.Combat.Archetypes))
 }
 
-// isDPSWeapon marks primary damage weapons in the Genshin-like demo.
+// isDPSWeapon marks primary damage roles across genres.
 func isDPSWeapon(w string) bool {
 	switch w {
+	// genshin weapons
 	case "单手剑", "双手剑", "长柄武器", "弓":
+		return true
+	// slg troops
+	case "骑兵", "攻城", "混合":
+		return true
+	// onmyoji roles
+	case "输出":
 		return true
 	default:
 		return false
@@ -855,16 +867,7 @@ func itemTable(g Goal) *tablekit.Table {
 			"id", "name", "type", "quality", "stack", "sell_gold", "desc",
 		},
 	}
-	items := [][7]string{
-		{"1001", "摩拉", "currency", "1", "999999", "0", "基础货币"},
-		{"1002", "原石", "currency", "5", "999999", "0", "稀有货币（演示）"},
-		{"2001", "冒险阅历", "exp", "2", "999999", "0", "冒险等级经验（演示）"},
-		{"2002", "大英雄的经验", "material", "3", "9999", "0", "角色经验书（演示）"},
-		{"2003", "武器突破矿石", "material", "3", "999", "50", "武器培养材料（演示）"},
-		{"3001", "相遇之缘", "gacha_ticket", "4", "999", "0", "常驻祈愿券（演示）"},
-		{"4001", "命星·演示", "hero_shard", "5", "999", "0", "角色命星（演示）"},
-	}
-	for _, it := range items {
+	for _, it := range itemsForGenre(g.Genre) {
 		t.Rows = append(t.Rows, []string{it[0], it[1], it[2], it[3], it[4], it[5], it[6]})
 	}
 	// gold sink preview item price scaled to economy
@@ -874,6 +877,76 @@ func itemTable(g Goal) *tablekit.Table {
 		"满级累计消耗锚点",
 	})
 	return t
+}
+
+type skillFlavor struct{ basic, skill, ult string }
+
+func skillNamesForGenre(genre string) skillFlavor {
+	switch genre {
+	case "slg":
+		return skillFlavor{"普攻", "战术指令", "统率技"}
+	case "onmyoji":
+		return skillFlavor{"普攻", "主动技能", "大招"}
+	default:
+		return skillFlavor{"普通攻击", "元素战技", "元素爆发"}
+	}
+}
+
+func eliteNameForGenre(genre string) string {
+	switch genre {
+	case "slg":
+		return "雪原掠夺者"
+	case "onmyoji":
+		return "觉醒妖灵"
+	default:
+		return "遗迹机兵"
+	}
+}
+
+func bossNameForGenre(genre string) string {
+	switch genre {
+	case "slg":
+		return "冰原巨兽"
+	case "onmyoji":
+		return "八岐幻影"
+	default:
+		return "风蚀之核"
+	}
+}
+
+func itemsForGenre(genre string) [][7]string {
+	switch genre {
+	case "slg":
+		return [][7]string{
+			{"1001", "生肉", "currency", "1", "999999", "0", "基础资源"},
+			{"1002", "木材", "currency", "1", "999999", "0", "基础资源"},
+			{"1003", "钻石", "currency", "5", "999999", "0", "稀有货币（演示）"},
+			{"2001", "统率经验", "exp", "2", "999999", "0", "建筑/统率经验"},
+			{"2002", "加速券·5分", "material", "3", "999", "0", "建造/研究加速"},
+			{"3001", "英雄招募券", "gacha_ticket", "4", "999", "0", "英雄抽取（演示）"},
+			{"4001", "英雄碎片", "hero_shard", "4", "999", "0", "英雄升星材料"},
+		}
+	case "onmyoji":
+		return [][7]string{
+			{"1001", "金币", "currency", "1", "999999", "0", "基础货币"},
+			{"1002", "勾玉", "currency", "5", "999999", "0", "稀有货币（演示）"},
+			{"2001", "式神经验", "exp", "2", "999999", "0", "升级材料"},
+			{"2002", "觉醒材料", "material", "3", "999", "100", "式神觉醒（演示）"},
+			{"2003", "御魂强化石", "material", "3", "999", "80", "御魂强化（演示）"},
+			{"3001", "神秘的符咒", "gacha_ticket", "5", "999", "0", "召唤券（演示）"},
+			{"4001", "式神碎片", "hero_shard", "4", "999", "0", "合成式神（演示）"},
+		}
+	default: // genshin
+		return [][7]string{
+			{"1001", "摩拉", "currency", "1", "999999", "0", "基础货币"},
+			{"1002", "原石", "currency", "5", "999999", "0", "稀有货币（演示）"},
+			{"2001", "冒险阅历", "exp", "2", "999999", "0", "冒险等级经验（演示）"},
+			{"2002", "大英雄的经验", "material", "3", "9999", "0", "角色经验书（演示）"},
+			{"2003", "武器突破矿石", "material", "3", "999", "50", "武器培养材料（演示）"},
+			{"3001", "相遇之缘", "gacha_ticket", "4", "999", "0", "常驻祈愿券（演示）"},
+			{"4001", "命星·演示", "hero_shard", "5", "999", "0", "角色命星（演示）"},
+		}
+	}
 }
 
 func gachaTable(g Goal, softStart int, softStep float64) *tablekit.Table {

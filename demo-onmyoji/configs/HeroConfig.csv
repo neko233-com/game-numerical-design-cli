@@ -1,0 +1,7 @@
+id,name,weapon,element,rarity,base_hp,base_atk,base_def,base_spd,base_crit_rate,base_crit_dmg,skill_basic,skill_skill,skill_ultimate,note
+3001,赤焰·输出,输出,火,5,1050,820,300,110,10,60,300101,300102,300103,demo-sanitized
+3002,青岚·控制,控制,风,5,1100,560,400,125,5,40,300201,300202,300203,demo-sanitized
+3003,玄水·治疗,治疗,水,5,1250,420,480,100,3,30,300301,300302,300303,demo-sanitized
+3004,黄岩·护盾,护盾,土,4,1500,350,700,85,3,30,300401,300402,300403,demo-sanitized
+3005,白藏·拉条,辅助,风,4,1000,480,380,140,5,35,300501,300502,300503,demo-sanitized
+3006,紫电·单体,输出,雷,4,980,760,320,115,12,65,300601,300602,300603,demo-sanitized

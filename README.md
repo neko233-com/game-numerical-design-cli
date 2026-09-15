@@ -151,12 +151,24 @@ gnd recipe show early-fast-growth
 gnd ndd new --name "装备强化" --system economy --out ndd-equip.md
 ```
 
-### 9. Demo：目标驱动配置（原神式）
+### 9. Demo：目标驱动配置（多游戏类型）
+
+内置三种类型预设（均为脱敏虚构数据）：
+
+| preset | 说明 | 示例 |
+|--------|------|------|
+| `genshin` | 原神式动作 RPG | 元素/武器、遗迹机兵、祈愿保底、摩拉 |
+| `slg` | 无尽冬日式 SLG | 兵种/统率、雪原掠夺者、采集加速、生肉木材 |
+| `onmyoji` | 阴阳师式回合制 | 式神定位、觉醒妖灵、勾玉/符咒、速度条 |
 
 ```bash
-gnd demo init --dir demo --xlsx          # 生成 goal.yaml + 英雄/技能/任务/敌人/抽卡表
+gnd demo presets
+gnd demo init --dir demo --preset genshin --xlsx
+gnd demo init --dir demo-slg --preset slg
+gnd demo init --dir demo-onmyoji --preset onmyoji
+
 # 改 demo/goal.yaml 里的目标，再：
-gnd demo check --goal demo/goal.yaml
+gnd demo check --goal demo/goal.yaml --html demo/report.html
 gnd demo sim   --goal demo/goal.yaml
 ```
 

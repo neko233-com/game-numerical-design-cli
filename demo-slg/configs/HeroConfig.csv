@@ -1,0 +1,7 @@
+id,name,weapon,element,rarity,base_hp,base_atk,base_def,base_spd,base_crit_rate,base_crit_dmg,skill_basic,skill_skill,skill_ultimate,note
+2001,盾卫方阵,步兵,守备,5,1600,380,720,70,5,40,200101,200102,200103,demo-sanitized
+2002,游侠骑射,骑兵,突击,5,1000,780,320,120,10,55,200201,200202,200203,demo-sanitized
+2003,火炮连队,攻城,火力,5,900,860,280,85,8,50,200301,200302,200303,demo-sanitized
+2004,斥候小队,侦察,机动,4,950,520,360,130,7,45,200401,200402,200403,demo-sanitized
+2005,医师队,辅助,后勤,4,1200,360,520,90,3,30,200501,200502,200503,demo-sanitized
+2006,联盟精锐,混合,联盟,4,1300,560,480,100,6,45,200601,200602,200603,demo-sanitized

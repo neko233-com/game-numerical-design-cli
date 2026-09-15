@@ -20,6 +20,8 @@ import (
 type Goal struct {
 	Name        string `json:"name" yaml:"name"`
 	Description string `json:"description" yaml:"description"`
+	// Genre: genshin | slg | onmyoji — controls flavor names in generated tables.
+	Genre string `json:"genre" yaml:"genre"`
 	// Version of goal schema.
 	Version int `json:"version" yaml:"version"`
 
@@ -112,6 +114,7 @@ func DefaultGoal() Goal {
 	return Goal{
 		Name:        "提瓦特数值Demo",
 		Description: "简化原神式：元素/武器/等级/技能/任务/祈愿，用于数值验证（脱敏虚构）",
+		Genre:       string(PresetGenshinRPG),
 		Version:     1,
 		Progress: ProgressGoal{
 			MaxLevel:    40,

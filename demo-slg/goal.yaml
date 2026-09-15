@@ -1,0 +1,126 @@
+name: 极地远征数值Demo
+description: 简化无尽冬日式 SLG：兵种/统率/采集/行军/加速，用于数值验证（脱敏虚构）
+genre: slg
+version: 1
+progress:
+    max_level: 30
+    daily_exp: 900
+    target_days:
+        "5": 1.2
+        "10": 3
+        "15": 6
+        "20": 12
+        "30": 25
+    early_slope: 2.2
+    late_slope: 0.45
+    break_level: 12
+    stat_gain_pct: 10
+combat:
+    target_win_rate: 0.52
+    target_turns: 6
+    archetypes:
+        - id: "2001"
+          name: 盾卫方阵
+          weapon: 步兵
+          element: 守备
+          rarity: 5
+          hp: 1600
+          atk: 380
+          def: 720
+          spd: 70
+          crit_rate: 0.05
+          crit_dmg: 0.4
+          basic_mult: 0.9
+          skill_mult: 1.2
+          ult_mult: 2
+        - id: "2002"
+          name: 游侠骑射
+          weapon: 骑兵
+          element: 突击
+          rarity: 5
+          hp: 1000
+          atk: 780
+          def: 320
+          spd: 120
+          crit_rate: 0.1
+          crit_dmg: 0.55
+          basic_mult: 1.15
+          skill_mult: 1.7
+          ult_mult: 2.9
+        - id: "2003"
+          name: 火炮连队
+          weapon: 攻城
+          element: 火力
+          rarity: 5
+          hp: 900
+          atk: 860
+          def: 280
+          spd: 85
+          crit_rate: 0.08
+          crit_dmg: 0.5
+          basic_mult: 1
+          skill_mult: 1.9
+          ult_mult: 3.4
+        - id: "2004"
+          name: 斥候小队
+          weapon: 侦察
+          element: 机动
+          rarity: 4
+          hp: 950
+          atk: 520
+          def: 360
+          spd: 130
+          crit_rate: 0.07
+          crit_dmg: 0.45
+          basic_mult: 1
+          skill_mult: 1.3
+          ult_mult: 1.8
+        - id: "2005"
+          name: 医师队
+          weapon: 辅助
+          element: 后勤
+          rarity: 4
+          hp: 1200
+          atk: 360
+          def: 520
+          spd: 90
+          crit_rate: 0.03
+          crit_dmg: 0.3
+          basic_mult: 0.7
+          skill_mult: 0.9
+          ult_mult: 1.2
+        - id: "2006"
+          name: 联盟精锐
+          weapon: 混合
+          element: 联盟
+          rarity: 4
+          hp: 1300
+          atk: 560
+          def: 480
+          spd: 100
+          crit_rate: 0.06
+          crit_dmg: 0.45
+          basic_mult: 0.95
+          skill_mult: 1.35
+          ult_mult: 2.2
+    enemy_hp_mult: 1.25
+    enemy_atk_mult: 0.6
+    enemy_def_mult: 1
+tasks:
+    daily_count: 5
+    daily_exp: 180
+    main_count: 20
+    side_share: 0.25
+gacha:
+    base_rate_5: 0.012
+    hard_pity: 50
+    soft_start_ratio: 0.7
+    featured_rate: 0.6
+    guarantee: true
+    base_rate_4: 0.08
+    hard_pity_4: 8
+economy:
+    prod_cons_min: 0.95
+    prod_cons_max: 1.12
+    starter_gold: 20000
+    gold_cost_max: 800000

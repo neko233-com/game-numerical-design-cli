@@ -1,0 +1,125 @@
+name: 平安京式神数值Demo
+description: 简化阴阳师式回合制：式神/御魂/速度条/觉醒，用于数值验证（脱敏虚构）
+genre: onmyoji
+version: 1
+progress:
+    max_level: 40
+    daily_exp: 1500
+    target_days:
+        "10": 0.8
+        "20": 2
+        "30": 4.5
+        "40": 10
+    early_slope: 2
+    late_slope: 0.55
+    break_level: 25
+    stat_gain_pct: 14
+combat:
+    target_win_rate: 0.58
+    target_turns: 10
+    archetypes:
+        - id: "3001"
+          name: 赤焰·输出
+          weapon: 输出
+          element: 火
+          rarity: 5
+          hp: 1050
+          atk: 820
+          def: 300
+          spd: 110
+          crit_rate: 0.1
+          crit_dmg: 0.6
+          basic_mult: 1.05
+          skill_mult: 1.85
+          ult_mult: 3.3
+        - id: "3002"
+          name: 青岚·控制
+          weapon: 控制
+          element: 风
+          rarity: 5
+          hp: 1100
+          atk: 560
+          def: 400
+          spd: 125
+          crit_rate: 0.05
+          crit_dmg: 0.4
+          basic_mult: 0.85
+          skill_mult: 1.25
+          ult_mult: 2
+        - id: "3003"
+          name: 玄水·治疗
+          weapon: 治疗
+          element: 水
+          rarity: 5
+          hp: 1250
+          atk: 420
+          def: 480
+          spd: 100
+          crit_rate: 0.03
+          crit_dmg: 0.3
+          basic_mult: 0.7
+          skill_mult: 0.95
+          ult_mult: 1.4
+        - id: "3004"
+          name: 黄岩·护盾
+          weapon: 护盾
+          element: 土
+          rarity: 4
+          hp: 1500
+          atk: 350
+          def: 700
+          spd: 85
+          crit_rate: 0.03
+          crit_dmg: 0.3
+          basic_mult: 0.75
+          skill_mult: 1
+          ult_mult: 1.6
+        - id: "3005"
+          name: 白藏·拉条
+          weapon: 辅助
+          element: 风
+          rarity: 4
+          hp: 1000
+          atk: 480
+          def: 380
+          spd: 140
+          crit_rate: 0.05
+          crit_dmg: 0.35
+          basic_mult: 0.8
+          skill_mult: 1.1
+          ult_mult: 1.5
+        - id: "3006"
+          name: 紫电·单体
+          weapon: 输出
+          element: 雷
+          rarity: 4
+          hp: 980
+          atk: 760
+          def: 320
+          spd: 115
+          crit_rate: 0.12
+          crit_dmg: 0.65
+          basic_mult: 1.1
+          skill_mult: 1.95
+          ult_mult: 3
+    enemy_hp_mult: 1.1
+    enemy_atk_mult: 0.5
+    enemy_def_mult: 0.85
+tasks:
+    daily_count: 4
+    daily_exp: 350
+    main_count: 22
+    side_share: 0.18
+gacha:
+    base_rate_5: 0.008
+    hard_pity: 60
+    soft_start_ratio: 0.68
+    featured_rate: 0.5
+    guarantee: true
+    base_rate_4: 0.06
+    hard_pity_4: 10
+economy:
+    prod_cons_min: 0.9
+    prod_cons_max: 1.2
+    starter_gold: 8000
+    gold_cost_max: 200000

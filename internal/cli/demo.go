@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"gopkg.in/yaml.v3"
 
@@ -15,10 +14,11 @@ import (
 
 func (a *App) cmdDemo(args []string) int {
 	if len(args) == 0 || args[0] == "help" || args[0] == "-h" {
-		fmt.Fprint(a.Stdout, `usage: gnd demo <init|build|check|sim|goal> [flags]
+		fmt.Fprint(a.Stdout, `usage: gnd demo <init|build|check|sim|goal|presets> [flags]
 
-init    脱敏脚手架：写出默认 goal + 生成配置表
+init    脱敏脚手架：写出 goal + 生成配置表
   --dir demo              输出目录（默认 demo）
+  --preset genshin|slg|onmyoji   游戏类型预设（默认 genshin）
   --xlsx                  额外生成 xlsx
 
 build   按 goal 文件生成配置表
@@ -28,11 +28,13 @@ build   按 goal 文件生成配置表
 
 check   生成后跑数值校验 + 目标对照
   --goal demo/goal.yaml
+  --html report.html
 
 sim     用生成的表做战斗/节奏快检
   --goal demo/goal.yaml
 
-goal    打印内置默认 goal（YAML）
+goal    打印内置 goal（--preset 可选）
+presets 列出内置类型预设
 
 「我给目标，你去配置」：改 goal.yaml 再 build/check。
 `)
@@ -49,16 +51,26 @@ goal    打印内置默认 goal（YAML）
 		return a.demoSim(args[1:])
 	case "goal":
 		return a.demoGoalPrint(args[1:])
+	case "presets":
+		return a.demoPresets(args[1:])
 	default:
 		fmt.Fprintf(a.Stderr, "unknown demo subcommand %q\n", args[0])
 		return 2
 	}
 }
 
+func (a *App) demoPresets(args []string) int {
+	for _, p := range goal.PresetInfos() {
+		fmt.Fprintf(a.Stdout, "%-10s  %s\n            %s\n", p.ID, p.Title, p.Description)
+	}
+	return 0
+}
+
 func (a *App) demoInit(args []string) int {
 	fs := a.newFlagSet("demo init")
 	dir := fs.String("dir", "demo", "output directory")
 	xlsx := fs.Bool("xlsx", false, "also write xlsx")
+	preset := fs.String("preset", string(goal.PresetGenshinRPG), "genshin|slg|onmyoji")
 	if err := parseTableFlags(fs, args); err != nil {
 		return 2
 	}
@@ -67,8 +79,7 @@ func (a *App) demoInit(args []string) int {
 	if err := os.MkdirAll(cfgDir, 0o755); err != nil {
 		return a.fail(err)
 	}
-	// write default goal yaml via json-ish manual? use Build then also dump goal file
-	g := goal.DefaultGoal()
+	g := goal.Preset(goal.ParsePreset(*preset))
 	if err := writeGoalYAML(goalPath, g); err != nil {
 		return a.fail(err)
 	}
@@ -213,11 +224,12 @@ func (a *App) demoSim(args []string) int {
 }
 
 func (a *App) demoGoalPrint(args []string) int {
-	g := goal.DefaultGoal()
-	if err := writeGoalYAML("", g); err != nil && !strings.Contains(err.Error(), "empty path") {
-		// print to stdout instead
+	fs := a.newFlagSet("demo goal")
+	preset := fs.String("preset", string(goal.PresetGenshinRPG), "genshin|slg|onmyoji")
+	if err := parseTableFlags(fs, args); err != nil {
+		return 2
 	}
-	// always print
+	g := goal.Preset(goal.ParsePreset(*preset))
 	b, err := marshalGoalYAML(g)
 	if err != nil {
 		return a.fail(err)
