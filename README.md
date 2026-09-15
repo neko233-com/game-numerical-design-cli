@@ -26,6 +26,7 @@ go build -o gnd ./cmd/gnd
 | `gnd demo` | 目标驱动脚手架：goal → 英雄/技能/任务/敌人/抽卡表 | 智能配置 |
 | `gnd script` | **内嵌 TS/JS**（esbuild+goja，无需装 Node） | 自定义验算 |
 | `gnd sim` | 并行战斗模拟（≤1000 并发，每场日志，可查询） | 模拟器 |
+| `gnd apply` | **一句话配置 + 自校验**（配新/改旧，改旧需确认） | 生产流水线 |
 | `gnd report` | **HTML 报告**（内联 SVG 曲线/柱状/直方图，默认 .html） | 交付报告 |
 | `gnd validate` | 多格式数值表安全检查（溢出/断崖/单调/重复 ID） | 校验脚本 |
 | `gnd recipe` | 数值菜谱：目标 → 模型 → 参数区间 → 坑 | 菜谱库 |
@@ -204,7 +205,29 @@ gnd sim clear
 - 历史查询：`.gnd/sim/index.json` + `manifest.json`。
 - `.gitignore` 已忽略 `.gnd/` 与战斗日志。
 
-### 12. HTML 报告（默认交付格式）
+### 12. 一句话配置（生产级 `apply`）
+
+```bash
+# 配新：一句话 → 生成全套配置 + 自校验 + HTML 报告（默认 dry-run）
+gnd apply "preset=slg max_level=30 win_rate=0.52 hard_pity=50" --dir out
+gnd apply --preset onmyoji --dir out --max-level 40 --win-rate 0.58 --write --sim 100
+
+# 改旧：基于已有 goal 覆盖参数；目录已有配置时需二次确认
+gnd apply --goal out/goal.yaml --dir out --win-rate 0.6 --write          # 交互输入 yes
+gnd apply --goal out/goal.yaml --dir out --win-rate 0.6 --write --yes    # CI 跳过确认
+
+# CI：JSON + 严格模式
+gnd apply "preset=genshin max_level=40" --dir out --write --yes --strict --format json
+```
+
+生产保障：
+- 默认 **dry-run** 只出计划，不写盘
+- 自校验失败（表结构/校验 error）→ **exit 1**，不写盘
+- 改旧无确认 → **exit 3**
+- 写盘后自动回读验证 + 可选 `--sim N` 模拟冒烟
+- `--strict`：告警也视为失败
+
+### 13. HTML 报告（默认交付格式）
 
 自包含单文件，内联 SVG，无外链，浏览器直接打开。
 
