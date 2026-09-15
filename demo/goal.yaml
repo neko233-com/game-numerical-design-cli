@@ -1,0 +1,124 @@
+name: 星轨数值Demo
+description: 简化崩铁式：命途/属性/等级/技能/任务/抽卡，用于数值验证
+version: 1
+progress:
+    max_level: 40
+    daily_exp: 1200
+    target_days:
+        "10": 1
+        "20": 2.2
+        "30": 4
+        "40": 8
+    early_slope: 1.8
+    late_slope: 0.6
+    break_level: 20
+    stat_gain_pct: 12
+combat:
+    target_win_rate: 0.55
+    target_turns: 8
+    archetypes:
+        - id: "1001"
+          name: 开拓者·毁灭
+          path: 毁灭
+          element: 物理
+          rarity: 5
+          hp: 1200
+          atk: 580
+          def: 460
+          spd: 100
+          crit_rate: 0.05
+          crit_dmg: 0.5
+          basic_mult: 1
+          skill_mult: 1.4
+          ult_mult: 2.8
+        - id: "1002"
+          name: 巡星·猎手
+          path: 巡猎
+          element: 风
+          rarity: 5
+          hp: 980
+          atk: 720
+          def: 360
+          spd: 115
+          crit_rate: 0.08
+          crit_dmg: 0.55
+          basic_mult: 1.1
+          skill_mult: 1.8
+          ult_mult: 3.2
+        - id: "1003"
+          name: 智识·星火
+          path: 智识
+          element: 火
+          rarity: 5
+          hp: 1020
+          atk: 700
+          def: 380
+          spd: 96
+          crit_rate: 0.05
+          crit_dmg: 0.5
+          basic_mult: 0.9
+          skill_mult: 1.6
+          ult_mult: 3.5
+        - id: "1004"
+          name: 存护·壁垒
+          path: 存护
+          element: 冰
+          rarity: 4
+          hp: 1400
+          atk: 420
+          def: 620
+          spd: 90
+          crit_rate: 0.05
+          crit_dmg: 0.5
+          basic_mult: 0.9
+          skill_mult: 1.1
+          ult_mult: 1.8
+        - id: "1005"
+          name: 丰饶·清泉
+          path: 丰饶
+          element: 雷
+          rarity: 4
+          hp: 1100
+          atk: 480
+          def: 480
+          spd: 98
+          crit_rate: 0.05
+          crit_dmg: 0.5
+          basic_mult: 0.9
+          skill_mult: 1
+          ult_mult: 1.5
+        - id: "1006"
+          name: 同谐·回响
+          path: 同谐
+          element: 量子
+          rarity: 4
+          hp: 1050
+          atk: 500
+          def: 450
+          spd: 105
+          crit_rate: 0.05
+          crit_dmg: 0.5
+          basic_mult: 0.9
+          skill_mult: 1.2
+          ult_mult: 1.6
+    enemy_hp_mult: 1.15
+    enemy_atk_mult: 0.55
+    enemy_def_mult: 0.9
+tasks:
+    daily_count: 4
+    daily_exp: 250
+    main_count: 24
+    side_share: 0.2
+gacha:
+    base_rate_5: 0.006
+    hard_pity: 90
+    soft_start_ratio: 0.65
+    featured_rate: 0.5
+    guarantee: true
+    base_rate_4: 0.051
+    hard_pity_4: 10
+economy:
+    prod_cons_min: 0.9
+    prod_cons_max: 1.15
+    starter_gold: 5000
+    gold_cost_max: 120000

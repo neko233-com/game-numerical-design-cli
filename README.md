@@ -23,6 +23,9 @@ go build -o gnd ./cmd/gnd
 | `gnd balance` | 锚点依据校验、敏感度排序、维度打分、胜率对照 | 平衡性分析框架 |
 | `gnd feel` | 「打击感太轻」等模糊描述 ↔ 量化阈值 | 手感量化 |
 | `gnd table` | **xlsx/csv/tsv/json/yaml** 跨格式转换、改值、加行、批量 | 配置表工具链 |
+| `gnd demo` | 目标驱动脚手架：goal → 英雄/技能/任务/敌人/抽卡表 | 智能配置 |
+| `gnd script` | **内嵌 TS/JS**（esbuild+goja，无需装 Node） | 自定义验算 |
+| `gnd sim` | 并行战斗模拟（≤1000 并发，每场日志，可查询） | 模拟器 |
 | `gnd validate` | 多格式数值表安全检查（溢出/断崖/单调/重复 ID） | 校验脚本 |
 | `gnd recipe` | 数值菜谱：目标 → 模型 → 参数区间 → 坑 | 菜谱库 |
 | `gnd ndd` | 生成数值设计文档（NDD）骨架 + 评审 checklist | 流程沉淀 |
@@ -147,6 +150,47 @@ gnd recipe show early-fast-growth
 gnd ndd new --name "装备强化" --system economy --out ndd-equip.md
 ```
 
+### 9. Demo：目标驱动配置（崩铁式）
+
+```bash
+gnd demo init --dir demo --xlsx          # 生成 goal.yaml + 英雄/技能/任务/敌人/抽卡表
+# 改 demo/goal.yaml 里的目标，再：
+gnd demo check --goal demo/goal.yaml
+gnd demo sim   --goal demo/goal.yaml
+```
+
+生成表：`HeroConfig` / `HeroLvUpConfig` / `SkillConfig` / `EnemyConfig` / `TaskConfig` / `ItemConfig` / `GachaPoolConfig`（均为虚构脱敏数据）。
+
+### 10. 内嵌 TypeScript 脚本（无需 Node）
+
+```bash
+gnd script run demo/scripts/balance.ts
+gnd script eval 'export default gnd.curve("linear", 10, {a:1,b:2})'
+```
+
+脚本内全局 `gnd`：`curve` / `damage` / `simBattle` / `loadTable` / `readJSON` / `writeJSON` / `log`。
+
+### 11. 并行战斗模拟器
+
+```bash
+# 默认每次 run 前清空 .gnd/sim 下历史；每场独立 JSON 日志；并发 ≤1000
+gnd sim run --n 1000 --workers 32 --name pvp-check \
+  --a-hp 8000 --a-atk 1200 --d-hp 7500 --d-atk 1100
+
+gnd sim run --n 500 --from-config demo/configs \
+  --hero-id 1001 --enemy-id 2020 --level 20
+
+gnd sim list
+gnd sim show <run_id>
+gnd sim battle <run_id> 1
+gnd sim logs <run_id>
+gnd sim clear
+```
+
+- 内存：结果只聚合计数/直方图，日志直接落盘，不驻留全部战斗数据。
+- 历史查询：`.gnd/sim/index.json` + `manifest.json`。
+- `.gitignore` 已忽略 `.gnd/` 与战斗日志。
+
 ## 设计原则（内置在工具里）
 
 1. **锚点必须有依据** — `gnd balance anchors` 对无 rationale 的锚点直接告警。
@@ -168,10 +212,14 @@ internal/
   balance/         锚点 / 敏感度 / 维度
   feel/            手感量化表
   tablekit/        xlsx/csv/tsv/json/yaml 读写与转换
+  goal/            目标 → 配置表生成
+  script/          内嵌 TS/JS（esbuild+goja）
+  simulator/       并行战斗模拟器 + 日志/索引
   validate/        数值表校验
   recipe/          菜谱库
   report/          表格 / JSON / sparkline 输出
   cli/             子命令
+demo/              脱敏 demo 配置与脚本
 ```
 
 ## 开发

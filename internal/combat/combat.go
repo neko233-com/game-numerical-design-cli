@@ -236,3 +236,91 @@ func EffectiveHP(hp, def float64) float64 {
 	const k = 100
 	return hp * (1 + def/k)
 }
+
+// FightResult is a single detailed fight outcome.
+type FightResult struct {
+	Winner     string  `json:"winner"` // attacker | defender | draw
+	Turns      int     `json:"turns"`
+	DmgDealt   float64 `json:"dmg_dealt"`
+	DmgTaken   float64 `json:"dmg_taken"`
+	AttackerHP float64 `json:"attacker_hp_left"`
+	DefenderHP float64 `json:"defender_hp_left"`
+}
+
+// SingleFight runs one 1v1 and returns the detailed outcome.
+func SingleFight(attacker, defender Unit, rng *rand.Rand) (*FightResult, error) {
+	if rng == nil {
+		rng = rand.New(rand.NewSource(1))
+	}
+	a := attacker.normalized()
+	d := defender.normalized()
+	ahp, dhp := a.HP, d.HP
+	aAcc, dAcc := 0.0, 0.0
+	turns := 0
+	var dealt, taken float64
+	const maxTurns = 1000
+	for ahp > 0 && dhp > 0 && turns < maxTurns {
+		turns++
+		aAcc += a.Speed
+		dAcc += d.Speed
+		if aAcc >= 1 && ahp > 0 && dhp > 0 {
+			aAcc--
+			if rng.Float64() < a.Acc*(1-d.Evasion) {
+				mult := 1.0
+				if rng.Float64() < a.CritRate {
+					mult = a.CritMult
+				}
+				base, _ := ComputeDamage(DamageInput{
+					Attack: a.Attack, Defense: d.Defense,
+					SkillCoeff: a.SkillCoeff, Type: a.Type,
+				})
+				dmg := base * mult
+				dhp -= dmg
+				dealt += dmg
+			}
+		}
+		if dAcc >= 1 && ahp > 0 && dhp > 0 {
+			dAcc--
+			if rng.Float64() < d.Acc*(1-a.Evasion) {
+				mult := 1.0
+				if rng.Float64() < d.CritRate {
+					mult = d.CritMult
+				}
+				base, _ := ComputeDamage(DamageInput{
+					Attack: d.Attack, Defense: a.Defense,
+					SkillCoeff: d.SkillCoeff, Type: d.Type,
+				})
+				dmg := base * mult
+				ahp -= dmg
+				taken += dmg
+			}
+		}
+	}
+	if ahp < 0 {
+		ahp = 0
+	}
+	if dhp < 0 {
+		dhp = 0
+	}
+	winner := "draw"
+	switch {
+	case dhp <= 0 && ahp > 0:
+		winner = "attacker"
+	case ahp <= 0 && dhp > 0:
+		winner = "defender"
+	case turns >= maxTurns:
+		winner = "draw"
+	default:
+		// both dead same tick — attacker wins if dealt more
+		if dealt >= taken {
+			winner = "attacker"
+		} else {
+			winner = "defender"
+		}
+	}
+	return &FightResult{
+		Winner: winner, Turns: turns,
+		DmgDealt: dealt, DmgTaken: taken,
+		AttackerHP: ahp, DefenderHP: dhp,
+	}, nil
+}

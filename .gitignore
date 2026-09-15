@@ -17,3 +17,8 @@ Thumbs.db
 # Local notes
 *.local.md
 tmp/
+
+# Simulation artifacts (logs are regenerated; never commit)
+.gnd/
+sim/
+**/logs/battle_*.json

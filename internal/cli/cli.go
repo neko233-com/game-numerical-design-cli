@@ -57,6 +57,12 @@ func (a *App) Run() int {
 		return a.cmdFeel(rest)
 	case "table":
 		return a.cmdTable(rest)
+	case "demo":
+		return a.cmdDemo(rest)
+	case "script":
+		return a.cmdScript(rest)
+	case "sim":
+		return a.cmdSim(rest)
 	case "validate":
 		return a.cmdValidate(rest)
 	case "recipe":
@@ -84,6 +90,9 @@ Commands:
   balance    锚点校验 / 敏感度分析 / 维度打分 / 胜率对照
   feel       手感模糊描述 ↔ 量化指标
   table      多格式配置表：xlsx/csv/tsv/json/yaml 读写转换与改值
+  demo       目标驱动 demo：init/build/check/sim（崩铁式数值脚手架）
+  script     内嵌 TS/JS 脚本（esbuild+goja，无需装 Node）
+  sim        并行战斗模拟器（≤1000 并发，每场日志，可查询历史）
   validate   数值表安全检查（csv/tsv/json/yaml/xlsx）
   recipe     数值「菜谱」库：目标 → 模型 → 参数区间
   ndd        生成数值设计文档（NDD）骨架
